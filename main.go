@@ -30,6 +30,10 @@ func (t Training) distance() float64 {
 
 // meanSpeed возвращает среднюю скорость бега или ходьбы.
 func (t Training) meanSpeed() float64 {
+	if t.Duration == 0 {
+		fmt.Println("Деление на ноль")
+		return 0
+	}
 	return t.distance() / t.Duration.Hours()
 }
 
@@ -96,13 +100,7 @@ func (r Running) Calories() float64 {
 // TrainingInfo возвращает структуру InfoMessage с информацией о проведенной тренировке.
 // Это переопределенный метод TrainingInfo() из Training.
 func (r Running) TrainingInfo() InfoMessage {
-	return InfoMessage{
-		TrainingType: r.TrainingType,
-		Duration:     r.Duration,
-		Distance:     r.distance(),
-		Speed:        r.meanSpeed(),
-		Calories:     r.Calories(),
-	}
+	return r.Training.TrainingInfo()
 }
 
 // Константы для расчета потраченных килокалорий при ходьбе.
@@ -121,6 +119,10 @@ type Walking struct {
 // Calories возвращает количество потраченных килокалорий при ходьбе.
 // Это переопределенный метод Calories() из Training.
 func (w Walking) Calories() float64 {
+	if w.Height == 0 {
+		fmt.Println("Деление на 0")
+		return 0
+	}
 	return (CaloriesWeightMultiplier*w.Weight + ((math.Pow((KmHInMsec*w.meanSpeed()), 2)/
 		(w.Height/CmInM))*CaloriesSpeedHeightMultiplier*w.Weight)*w.Duration.Hours()*float64(MinInHours))
 }
@@ -128,13 +130,7 @@ func (w Walking) Calories() float64 {
 // TrainingInfo возвращает структуру InfoMessage с информацией о проведенной тренировке.
 // Это переопределенный метод TrainingInfo() из Training.
 func (w Walking) TrainingInfo() InfoMessage {
-	return InfoMessage{
-		TrainingType: w.TrainingType,
-		Duration:     w.Duration,
-		Distance:     w.distance(),
-		Speed:        w.meanSpeed(),
-		Calories:     w.Calories(),
-	}
+	return w.Training.TrainingInfo()
 }
 
 // Константы для расчета потраченных килокалорий при плавании.
@@ -179,9 +175,11 @@ func (s Swimming) TrainingInfo() InfoMessage {
 // ReadData возвращает информацию о проведенной тренировке.
 func ReadData(training CaloriesCalculator) string {
 	// получите количество затраченных калорий
-	// вызов был удален т.к повторяет вывод калорий полученный через info
+	calories := training.Calories()
 	// получите информацию о тренировке
 	info := training.TrainingInfo()
+	// добавьте полученные калории в структуру с информацией о тренировке
+	info.Calories = calories
 
 	return fmt.Sprint(info)
 }
